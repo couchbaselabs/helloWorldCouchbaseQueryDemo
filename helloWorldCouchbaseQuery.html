@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<title>
+Hello World! - Couchbase Query Demonstration
+</title>
+</head>
+
+<!-- This program presents a radio-button display, whereby a user selects
+     one of three countries. A search is then conducted on the travel-sample
+     bucket, within Couchbase Server; and up to 10 records on which a match
+     has been made are returned and displayed. 
+     
+     tony.hillman@couchbase.com, 02/13/2017 -->
+
+<style>
+div.retrievalsInnerBox 
+{
+	overflow: scroll;
+}
+
+.queryConfirmationSpan {
+
+	font-family: Courier New;
+	font-size: 12pt;
+	white-space: nowrap;
+
+}
+
+.availableCountriesDialog {
+
+	border-radius: 25px;
+    background: #73AD21;
+    padding: 20px; 
+    width: 200px;
+    height: 150px; 
+}
+
+.retrievalsContentBox {
+
+	border-radius: 25px;
+    background: #73AD21;
+    padding: 20px; 
+    width: 200px;
+    height: 150px; 
+}
+
+/* Animation wheel for waiting-times...*/
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid red;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+</style>
+
+<body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type = "text/javascript" language = "javascript">
+
+// Keep track of the number of times the sequence of search
+// and display has been run, since this affects the way in which
+// we position the display of the query-string.
+//
+var timesThrough = 0;
+
+// Once the html file has fully loaded...
+//
+$(document).ready(function() 
+{
+	// Establish the routines for object-movement.
+	//
+	jQuery.easing['jswing'] = jQuery.easing['swing'];
+
+	jQuery.extend( jQuery.easing,
+	{
+		easeOutSine: function (x, t, b, c, d) {
+			return c * Math.sin(t/d * (Math.PI/2)) + b;
+		},
+		easeOutBounce: function (x, t, b, c, d) {
+			if ((t/=d) < (1/2.75)) {
+				return c*(7.5625*t*t) + b;
+			} else if (t < (2/2.75)) {
+				return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
+			} else if (t < (2.5/2.75)) {
+				return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
+			} else {
+				return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
+			}
+		}
+	});
+	
+	// Move the Couchbase logo down into position, and fade in the Couchbase name,
+	// when the file first loads.
+	//
+	$(".couchbaseLogo").animate({ marginTop: "+=180px" }, 2400, 'easeOutBounce').fadeIn({queue: false, duration: 6500});
+	
+	$(".couchbaseName").fadeIn({queue: true, duration: 4500});
+	
+	// When the Query Couchbase button is pressed...
+	//
+	$("#queryCouchbase").click(function(event)
+    {  
+    	// Run the progress wheel.
+		//
+		$(".couchbaseRetrievalsContent").fadeOut({ queue: false, duration: 10 });
+		$(".loaderWheel").fadeIn({ queue: false, duration: 3000 });
+    	
+    	// Get the user's radio-button selection, which corresonds to a particular
+    	// beer style.
+    	// 
+    	var countries = document.getElementsByName("country");
+    	var selectedCountryValue = 0;
+    	var selectedCountryName = "";
+    	
+		for (var i = 0; i < countries.length; i++) 
+		{
+			if (countries[i].checked == true) 
+			{
+				selectedCountryValue = countries[i].value;
+			}
+		}
+		
+		// Establish the beer-style, based on the value returned from the selection.
+		//
+		if (selectedCountryValue == 0)
+		{
+			selectedCountryName = "United States";
+		} 
+		else 
+		{
+			if (selectedCountryValue == 1)
+			{
+				selectedCountryName = "United Kingdom";
+			}
+			else
+			{
+				if (selectedCountryValue == 2)
+				{
+					selectedCountryName = "France";
+				}
+			}	
+		}
+    	
+    	// Specify the query: get every document in the travel-sample bucket, with a maximum
+		// of 10 to be returned.
+		//
+		var selectedQuery = 'SELECT * FROM `travel-sample` LIMIT 20';
+		var selectedQuery = 'SELECT * FROM `travel-sample` WHERE country = ' + '\"' + selectedCountryName + '\"';
+
+		// The address and port on which the node.js server is listening.
+		//
+		var nodeJsAddress = "http://localhost:8082/";
+
+		// Append the selected query to the address, with the key of "myQuery" (which is
+		// known to the server.
+		//
+		var nodeJsTargetURL = nodeJsAddress + '?' + "myQuery=" + selectedQuery;
+		
+		// If this is not the first time we have performed the query-response routine,
+		// blank out the value of the queryConfirmation span, and put it back to its
+		// starting-position.
+		//
+		if (timesThrough != 0)
+		{
+			document.getElementById('queryConfirmationSpan').innerHTML = "";
+							
+			$(".queryConfirmationSpan").animate({ marginLeft: "+=900px" }, 1, 'easeOutSine');
+		}
+	
+		// Keep track of how many times we have gone through the routine.
+		//
+		timesThrough++;
+		
+		// Set the queryConfirmation span to the value of the current query, so
+		// it can be displayed.
+		//		
+		document.getElementById("queryConfirmationSpan").innerHTML = selectedQuery;
+							
+		// Move and fade it confirmation of the current query.
+		//							
+		$(".queryConfirmationSpan").animate({ marginLeft: "-=900px" }, 2500, 'easeOutSine').fadeIn({queue: false, duration: 10});
+
+    	// Send the selected query to the node.js server, and handle
+    	// the return value.
+    	//
+		$.getJSON(nodeJsTargetURL, function(dataReturnedFromCouchbase) 
+		{			
+			// When we get a response, fade out the progress wheel, and fade in
+			// the response-display.
+			//				
+			$(".loaderWheel").fadeOut({ queue: false, duration: 100 });
+			$(".couchbaseRetrievalsContent").fadeIn({ queue: true, duration: 10 });
+			
+			// A string with which to display results in the browser. 
+			//
+			var cbDataDisplayString = '';
+	
+				// For each of the 10 returned documents within the array...
+				//									
+				for (var currentKeyPosition = 0; currentKeyPosition < 10; currentKeyPosition++)
+				{	
+					// Grab the current returned document.
+					//					
+					$.each(dataReturnedFromCouchbase[currentKeyPosition], function(key, val) 
+					{	
+						// Grab each key and value in the document, and add them to the display
+						// string.
+						//							
+						$.each(val, function(newKey, newVal)
+						{			
+							cbDataDisplayString = cbDataDisplayString + "<i>" + JSON.stringify(newKey) + "</i>" + " : " 
+											+ "<b>" + JSON.stringify(newVal) + "</b>" + '</p>' + '<p>';
+						});
+					});
+						
+					// Add vertical space after the current document, to separate it
+					// from the next, within the display-pane..
+					//
+					cbDataDisplayString = cbDataDisplayString + '</br></br></br>';
+				}
+					
+				// Update the display with the string containing all the key-value pairs
+				// from all the returned documents.
+				//
+				document.getElementById('CouchbaseRetrievalsContent').innerHTML 
+									= cbDataDisplayString;
+		});			
+	});
+});
+
+</script>   
+
+	<!-- Initial dialog, presenting to the user a choice of three possible countries, one 
+		to be selected by means of radio-button. -->
+
+    <div id="availableCountriesDialog" class="availableCountriesDialog" style="position: absolute; z-index:79; 
+    	top: 20px; left: 20px; width: 250px; height: 240px; border: 6px solid #000000; box-shadow: 2px 8px 16px 0px rgba(0,0,0,0.2); 
+    		background-color: #FFFFFF;">
+
+        <div id="availableCountriesTitle" style="position: relative; top: 10px; left: 10px; width: 230px; height: 40px; border: 0px; 
+        		solid #ffffff; background-color: #ffffff; font-family: Helvetica; color: black; font-size: 16pt;">
+        		
+			<div class="airlineCountries" STYLE="position:absolute;  TOP:0px; LEFT:0px;" >
+				<img STYLE="position:absolute; z-index:29; TOP:0px; LEFT:0px;" src="./airlineCountries.png" width="220px" height="45px"> 
+			</div>
+        </div>
+
+        <form name="availableCountriesForm" style="position: relative; z-index:99; background-color: #FFFFFF; width: 160px; 
+        			height: 196px; top: 24px; left: 30px">
+
+            <div id="firstCountry" style="position: relative; top: 10px; left: 26px; width: 160px; height: 40px; border: 0px solid #bbbbbb; 
+            		background-color: #FFFFFF; font-family: Helvetica; color: black; font-size: 12pt;">
+            		
+                <input type="radio" id="11385" name="country" value="0" checked="checked">
+                United States<br>
+                
+            </div>
+
+            <div id="secondCountry" style="position: relative; top: 10px; left: 26px; width: 160px; height: 40px; border: 0px solid #599bb3; 
+            		background-color: #FFFFFF; font-family: Helvetica; color: black; font-size: 12pt;">
+            		
+                <input type="radio" id="11585" name="country" value="1">
+                United Kingdom<br>
+                
+            </div>
+
+            <div id="thirdCountry" style="position: relative; top: 10px; left: 26px; width: 160px; height: 106px; border: 0px solid #599bb3; 
+            		background-color: #FFFFFF; font-family: Helvetica; color: black; font-size: 12pt;">
+            		
+                <input type="radio" id="14997" name="country" value="2">
+                France<br>
+                
+            </div>
+            
+        </form>
+        
+        <!-- Couchbase Logo and Name -->
+        
+        <div class="couchbaseLogo" STYLE="position:absolute; display: none; TOP:130px; LEFT:72px;" >
+			<img STYLE="position:absolute; z-index:29; TOP:0px; LEFT:0px;" src="./couchbaseLogo.png" width="120px" height="120px"> 
+		</div>
+		
+		<div class="couchbaseName" STYLE="position:absolute; display: none; TOP:446px; LEFT:0px;" >
+			<img STYLE="position:absolute; z-index:29; TOP:0px; LEFT:0px;" src="./couchbaseName.png" width="275px" height="56px"> 
+		</div>
+		
+		<!-- Button for query-initiation -->
+
+		<input type = "button" id = "queryCouchbase" 
+		style="position: absolute; top: 218px; left: 52px; width: 174px; height: 36px; background-image:url('./queryCouchbase.png');
+				box-shadow: 2px 8px 16px 0px rgba(0,0,0,0.2); outline: none;
+				background-size: 170px 32px; background-repeat: no-repeat; 
+				z-index:99;
+				font-family: Helvetica; color: black; font-size: 12pt; background-color: #ffffff;">
+				
+		<!-- Notice of query submitted. This starts off-screen, to the right, and is
+		     moved and faded in, upon query-submission. -->
+		
+		<div id="queryConfirmationNotice" class="queryConfirmationNotice" style="position: absolute; top:530px; left: 0px;
+					height: 40px; width: 580 px; z-index:99; border: 2px solid #ffffff;">
+					
+				<span id="queryConfirmationSpan" class="queryConfirmationSpan" style="position:relative; height: 40px; 
+							left: 900px; width 1580px; display=none">
+				
+					<p style="width: 1600px; z-index:99;">
+					
+					</p>
+				
+				</span>
+		</div>
+				
+		<!-- Headers for retrieval-display -->
+		
+		<div id="CouchbaseRetrievalsHeaderBox" class="retrievalsHeaderBox" style="position: absolute; top: 20px; left: 200px; 
+										height: 30px; width: 280px; line-height: 20px;">
+
+        <span id="CouchbaseRetrievalsHeader" style="position: absolute; top 0px; left: 92px; width: 260px; height: 20px; 
+        								font-family: Helvetica; color: black; font-size: 11pt; padding: 0pt; padding-left: 24pt">
+        								
+			<div class="travelSampleRetrievals" STYLE="position:relative; TOP:0px; LEFT:16px;" >
+				<img STYLE="position:absolute; z-index:29; TOP:0px; LEFT:0px;" src="./travelSampleRetrievals.png" width="275px" height="52px"> 
+			</div>
+        </span>
+    </div>
+    
+    <!-- Retrieval-contents -->
+
+    <div id="CouchbaseRetrievalsContentBox" class="retrievalsContentBox" style="position: absolute; top: 75px; 
+    								left: 320px; width: 260px; height: 376px; border: 6px solid #000000; z-index:29;
+    									box-shadow: 2px 8px 16px 0px rgba(0,0,0,0.2); background-color: #ffffff;">
+    									
+    	<div id = "RetrievalsInnerBox" class="retrievalsInnerBox" style="position:relative; top:4px; left:4px; width: 264px; height: 380px;
+    									z-index:29;background-color: #ffffff;">
+
+        	<span id="CouchbaseRetrievalsContent" class="couchbaseRetrievalsContent" style="position: relative; display:none; 
+        			top 20px; left: 10px; width: 240px; height: 366px; 
+        							z-index:29;font-family: Courier; color: black; font-size: 9pt; padding: 0pt">
+        	</span>
+        	
+        	<!-- Spinning wheel and notice, to display prior to content-readiness -->
+
+			<div id="processingNoticeAndLoader" class="loaderWheel" style="position: relative; display:none; top: 20px; 
+						left: 20px">
+		
+				<span id="processingNotice" style="position: relative; top 20px; left: 64px; font-family: Helvetica; color: black; 
+								font-size: 8pt; padding: 0pt; border: 0px solid #599bb3;">
+						<p>
+							Processing...
+						</p>
+				</span>
+		
+				<div class="loader" style="position: relative;  top: 16px; left: 72px; height: 12px; width: 12px; ">
+				
+				</div>
+		
+			</div>
+
+		</div>
+		
+	</div>
+
+</body>
+
+</html>
+		

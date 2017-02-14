@@ -12,7 +12,7 @@ Hello World! - Couchbase Query Demonstration
      bucket, within Couchbase Server; and up to 10 records on which a match
      has been made are returned and displayed. 
      
-     tony.hillman@couchbase.com, 02/13/2017 -->
+     tony.hillman@couchbase.com, 02/14/2017 -->
 
 <style>
 div.retrievalsInnerBox 
@@ -25,24 +25,25 @@ div.retrievalsInnerBox
 	font-family: Courier New;
 	font-size: 12pt;
 	white-space: nowrap;
+
 }
 
 .availableCountriesDialog {
 
 	border-radius: 25px;
-        background: #73AD21;
-        padding: 20px; 
-        width: 200px;
-        height: 150px; 
+    background: #73AD21;
+    padding: 20px; 
+    width: 200px;
+    height: 150px; 
 }
 
 .retrievalsContentBox {
 
 	border-radius: 25px;
-        background: #73AD21;
-        padding: 20px; 
-        width: 200px;
-        height: 150px; 
+    background: #73AD21;
+    padding: 20px; 
+    width: 200px;
+    height: 150px; 
 }
 
 /* Animation wheel for waiting-times...*/
@@ -189,9 +190,14 @@ $(document).ready(function()
 		timesThrough++;
 		
 		// Set the queryConfirmation span to the value of the current query, so
-		// it can be displayed.
+		// it can be displayed. Put a half-second delay on the change, so that it doesn't
+		// become visible on the screen before the old string has disappeared.
 		//		
-		document.getElementById("queryConfirmationSpan").innerHTML = selectedQuery;
+		setTimeout(
+			function()
+			{
+				document.getElementById("queryConfirmationSpan").innerHTML = selectedQuery;
+			}, 500);
 							
 		// Move and fade it confirmation of the current query.
 		//							

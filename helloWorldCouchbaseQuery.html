@@ -25,25 +25,24 @@ div.retrievalsInnerBox
 	font-family: Courier New;
 	font-size: 12pt;
 	white-space: nowrap;
-
 }
 
 .availableCountriesDialog {
 
 	border-radius: 25px;
-    background: #73AD21;
-    padding: 20px; 
-    width: 200px;
-    height: 150px; 
+        background: #73AD21;
+        padding: 20px; 
+        width: 200px;
+        height: 150px; 
 }
 
 .retrievalsContentBox {
 
 	border-radius: 25px;
-    background: #73AD21;
-    padding: 20px; 
-    width: 200px;
-    height: 150px; 
+        background: #73AD21;
+        padding: 20px; 
+        width: 200px;
+        height: 150px; 
 }
 
 /* Animation wheel for waiting-times...*/
@@ -117,7 +116,7 @@ $(document).ready(function()
 	// When the Query Couchbase button is pressed...
 	//
 	$("#queryCouchbase").click(function(event)
-    {  
+        {  
     	// Run the progress wheel.
 		//
 		$(".couchbaseRetrievalsContent").fadeOut({ queue: false, duration: 10 });
@@ -159,7 +158,7 @@ $(document).ready(function()
 			}	
 		}
     	
-    	// Specify the query: get every document in the travel-sample bucket, with a maximum
+    	        // Specify the query: get every document in the travel-sample bucket, with a maximum
 		// of 10 to be returned.
 		//
 		var selectedQuery = 'SELECT * FROM `travel-sample` LIMIT 20';
@@ -198,9 +197,9 @@ $(document).ready(function()
 		//							
 		$(".queryConfirmationSpan").animate({ marginLeft: "-=900px" }, 2500, 'easeOutSine').fadeIn({queue: false, duration: 10});
 
-    	// Send the selected query to the node.js server, and handle
-    	// the return value.
-    	//
+    	        // Send the selected query to the node.js server, and handle
+    	        // the return value.
+    	        //
 		$.getJSON(nodeJsTargetURL, function(dataReturnedFromCouchbase) 
 		{			
 			// When we get a response, fade out the progress wheel, and fade in

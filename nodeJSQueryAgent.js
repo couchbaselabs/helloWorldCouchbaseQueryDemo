@@ -12,8 +12,8 @@ http.createServer(function (request, response)
     
     var queryObject = url.parse(request.url, true).query
 	
-	var theQueryString = queryObject.myQuery;
-	console.log("Query string is " + theQueryString);
+    var theQueryString = queryObject.myQuery;
+    console.log("Query string is " + theQueryString);
     
     // Contact Couchbase and open the travel-sample bucket.
     //
@@ -25,19 +25,19 @@ http.createServer(function (request, response)
     {
     	myBucket.manager().createPrimaryIndex(function()
     	{
-    		myBucket.query(
-    			couchbase.N1qlQuery.fromString(theQueryString),
-    			function (err, rows) 
-    			{
-    				console.log("Got rows: %j", rows);	
+    	    myBucket.query(
+                couchbase.N1qlQuery.fromString(theQueryString),
+    		function (err, rows) 
+    		{
+    		    console.log("Got rows: %j", rows);	
     				
-    				response.writeHead(200, {"Content-Type": "application/json", 
-    											"Access-Control-Allow-Origin": "*"});
-    				console.log("Returning...");
-    				response.end(JSON.stringify(rows));
-    		});
-    	});
-	});		
+    		    response.writeHead(200, {"Content-Type": "application/json", 
+    								"Access-Control-Allow-Origin": "*"});
+    		    console.log("Returning...");
+    		    response.end(JSON.stringify(rows));
+    	    });
+	});
+    });		
 									    
 }).listen(8082);
 

@@ -159,10 +159,8 @@ $(document).ready(function()
 			}	
 		}
     	
-    	        // Specify the query: get every document in the travel-sample bucket, with a maximum
-		// of 10 to be returned.
+    	        // Specify the query: get every document in the travel-sample bucket.
 		//
-		var selectedQuery = 'SELECT * FROM `travel-sample` LIMIT 10';
 		var selectedQuery = 'SELECT * FROM `travel-sample` WHERE country = ' + '\"' + selectedCountryName + '\"';
 
 		// The address and port on which the node.js server is listening.
@@ -218,7 +216,8 @@ $(document).ready(function()
 			//
 			var cbDataDisplayString = '';
 	
-				// For each of the 10 returned documents within the array...
+				// For each of first the 10 returned documents within the array (change
+				// this number according to how many you wish to display)...
 				//									
 				for (var currentKeyPosition = 0; currentKeyPosition < 10; currentKeyPosition++)
 				{	

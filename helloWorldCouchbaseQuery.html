@@ -9,10 +9,10 @@ Hello World! - Couchbase Query Demonstration
 
 <!-- This program presents a radio-button display, whereby a user selects
      one of three countries. A search is then conducted on the travel-sample
-     bucket, within Couchbase Server; and up to 10 records on which a match
+     bucket, within Couchbase Server; and up to 100 records on which a match
      has been made are returned and displayed. 
      
-     tony.hillman@couchbase.com, 02/14/2017 -->
+     tony.hillman@couchbase.com, 02/22/2017 -->
 
 <style>
 div.retrievalsInnerBox 
@@ -117,14 +117,14 @@ $(document).ready(function()
 	// When the Query Couchbase button is pressed...
 	//
 	$("#queryCouchbase").click(function(event)
-        {  
+    {  
     	// Run the progress wheel.
 		//
 		$(".couchbaseRetrievalsContent").fadeOut({ queue: false, duration: 10 });
 		$(".loaderWheel").fadeIn({ queue: false, duration: 3000 });
     	
-    	// Get the user's radio-button selection, which corresonds to a particular
-    	// beer style.
+    	// Get the user's radio-button selection, which corresponds to a particular
+    	// country.
     	// 
     	var countries = document.getElementsByName("country");
     	var selectedCountryValue = 0;
@@ -138,7 +138,7 @@ $(document).ready(function()
 			}
 		}
 		
-		// Establish the beer-style, based on the value returned from the selection.
+		// Establish the country, based on the value returned from the selection.
 		//
 		if (selectedCountryValue == 0)
 		{
@@ -159,18 +159,19 @@ $(document).ready(function()
 			}	
 		}
     	
-    	        // Specify the query: get every document in the travel-sample bucket.
+    	// Specify the query: get every document in the travel-sample bucket. This string is just
+    	// for client-side display. (We only send the country-name to the server.)
 		//
-		var selectedQuery = 'SELECT * FROM `travel-sample` WHERE country = ' + '\"' + selectedCountryName + '\"';
+		var selectedQueryForDisplay = 'SELECT * FROM `travel-sample` WHERE country = ' + '\"' + selectedCountryName + '\"';
 
 		// The address and port on which the node.js server is listening.
 		//
 		var nodeJsAddress = "http://localhost:8082/";
 
-		// Append the selected query to the address, with the key of "myQuery" (which is
+		// Append the selected country-name to the address, with the key of "myCountryValue" (which is
 		// known to the server.
 		//
-		var nodeJsTargetURL = nodeJsAddress + '?' + "myQuery=" + selectedQuery;
+		var nodeJsTargetURL = nodeJsAddress + '?' + "myCountryValue=" + selectedCountryName;
 		
 		// If this is not the first time we have performed the query-response routine,
 		// blank out the value of the queryConfirmation span, and put it back to its
@@ -194,16 +195,16 @@ $(document).ready(function()
 		setTimeout(
 			function()
 			{
-				document.getElementById("queryConfirmationSpan").innerHTML = selectedQuery;
+				document.getElementById("queryConfirmationSpan").innerHTML = selectedQueryForDisplay;
 			}, 500);
 							
-		// Move and fade it confirmation of the current query.
+		// Move and fade in confirmation of the current query.
 		//							
 		$(".queryConfirmationSpan").animate({ marginLeft: "-=900px" }, 2500, 'easeOutSine').fadeIn({queue: false, duration: 10});
 
-    	        // Send the selected query to the node.js server, and handle
-    	        // the return value.
-    	        //
+    	// Send the selected country-value to the node.js server, and handle
+    	// the return value.
+    	//
 		$.getJSON(nodeJsTargetURL, function(dataReturnedFromCouchbase) 
 		{			
 			// When we get a response, fade out the progress wheel, and fade in
@@ -216,35 +217,34 @@ $(document).ready(function()
 			//
 			var cbDataDisplayString = '';
 	
-				// For each of first the 10 returned documents within the array (change
-				// this number according to how many you wish to display)...
-				//									
-				for (var currentKeyPosition = 0; currentKeyPosition < 10; currentKeyPosition++)
+			// For each of the first 100 returned documents within the array...
+			//									
+			for (var currentKeyPosition = 0; currentKeyPosition < 100; currentKeyPosition++)
+			{	
+				// Grab the current returned document.
+				//					
+				$.each(dataReturnedFromCouchbase[currentKeyPosition], function(key, val) 
 				{	
-					// Grab the current returned document.
-					//					
-					$.each(dataReturnedFromCouchbase[currentKeyPosition], function(key, val) 
-					{	
-						// Grab each key and value in the document, and add them to the display
-						// string.
-						//							
-						$.each(val, function(newKey, newVal)
-						{			
-							cbDataDisplayString = cbDataDisplayString + "<i>" + JSON.stringify(newKey) + "</i>" + " : " 
+					// Grab each key and value in the document, and add them to the display
+					// string.
+					//							
+					$.each(val, function(newKey, newVal)
+					{			
+						cbDataDisplayString = cbDataDisplayString + "<i>" + JSON.stringify(newKey) + "</i>" + " : " 
 											+ "<b>" + JSON.stringify(newVal) + "</b>" + '</p>' + '<p>';
-						});
 					});
+				});
 						
-					// Add vertical space after the current document, to separate it
-					// from the next, within the display-pane..
-					//
-					cbDataDisplayString = cbDataDisplayString + '</br></br></br>';
-				}
-					
-				// Update the display with the string containing all the key-value pairs
-				// from all the returned documents.
+				// Add vertical space after the current document, to separate it
+				// from the next, within the display-pane..
 				//
-				document.getElementById('CouchbaseRetrievalsContent').innerHTML 
+				cbDataDisplayString = cbDataDisplayString + '</br></br></br>';
+			}
+					
+			// Update the display with the string containing all the key-value pairs
+			// from all the returned documents.
+			//
+			document.getElementById('CouchbaseRetrievalsContent').innerHTML 
 									= cbDataDisplayString;
 		});			
 	});

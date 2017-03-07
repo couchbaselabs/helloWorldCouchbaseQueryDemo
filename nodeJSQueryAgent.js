@@ -1,7 +1,5 @@
 // This program responds to a call from a browser-based client, accepting data
-// to be used in a search of the Couchbase Server beer-sample bucket. The data 
-// consists of a beer ID, which is used to retrieve a JSON document featuring 
-// information on the brewery.
+// to be used in a search of the Couchbase Server travel-sample bucket. 
 
 var http = require('http');
 var url = require('url');
